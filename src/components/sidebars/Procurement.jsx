@@ -9,7 +9,7 @@ function Procurement() {
         { name: 'Requisitions', icon: <ClipboardList size={18} />, path:'/requisitions' },
         { name: 'LPO', icon: <FileText size={18} />, path: '/lpo' },
         { name: 'Inventory', icon: <Package size={18} />, path: '/inventory' },
-        { name: 'Purchase Reports', icon: <ShoppingCart size={18} />, path:'/reports' },
+        { name: 'Purchase Reports', icon: <ShoppingCart size={18} />, path:'/purchases' },
     ]
   const navigate = useNavigate();
 

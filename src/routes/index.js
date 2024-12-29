@@ -24,6 +24,9 @@ import RoomStatus from "../pages/RoomStatus";
 import SalesOverview from "../pages/SalesOverview";
 import SupplierAddressBook from "../pages/SupplierAddressBook";
 import LocalPurchaseOrders from "../pages/LocalPurchaseOrders";
+import Restaurant from "../pages/Restaurant";
+import Bar from "../pages/Bar";
+import Podium from "../pages/Podium";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -242,6 +245,36 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <LocalPurchaseOrders />
+      }
+    ]
+  },
+  {
+    path: "/restaurant",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <Restaurant />
+      }
+    ]
+  }, 
+  {
+    path: "/bar",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <Bar />
+      }
+    ]
+  },
+  {
+    path: "/podium",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <Podium />
       }
     ]
   }

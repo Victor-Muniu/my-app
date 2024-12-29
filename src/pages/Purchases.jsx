@@ -1,79 +1,95 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import PurchaseDetails from "../components/maincomponents/PurchaseDetails";
+const Purchases = () => {
+  const [dateRange, setDateRange] = useState("");
+  const [selectedSupplier, setSelectedSupplier] = useState("All Suppliers");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
-export default function Purchases() {
-  const [filters, setFilters] = useState({
-    dateRange: '',
-    supplier: 'All Suppliers',
-    category: 'All Categories',
-    search: ''
-  })
+  const [purchases, setPurchases] = useState([]);
 
-  const purchasesData = [
-    {
-      date: '2025-03-15',
-      id: 'PUR-001',
-      supplier: 'Acme Supplies',
-      category: 'Food & Beverages',
-      description: 'Fresh Produce',
-      quantity: 100,
-      unitPrice: 2.50,
-      totalCost: 250.00,
-      status: 'Paid'
-    },
-    {
-      date: '2025-03-16',
-      id: 'PUR-002',
-      supplier: 'Clean Co.',
-      category: 'Housekeeping Supplies',
-      description: 'Cleaning Products',
-      quantity: 50,
-      unitPrice: 5.00,
-      totalCost: 250.00,
-      status: 'Pending'
+  useEffect(() => {
+    fetchPurchases();
+  }, []);
+  const fetchPurchases = async () => {
+    try {
+      const response = await axios.get("http://localhost:3002/purchases", {
+        withCredentials: true,
+      });
+      setPurchases(response.data);
+    } catch (error) {
+      console.error("Error fetching staff data:", error);
     }
-  ]
+  };
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  const topSuppliers = [
+    { name: "Acme Supplies", amount: 5000 },
+    { name: "Clean Co.", amount: 3500 },
+    { name: "Food Distributors Inc.", amount: 2750 },
+  ];
+
+  const handleViewPurchase = (purchase) => {
+    setSelectedPurchase(purchase);
+  };
+
+  const purchaseQuantity = () => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    const currentMonthPurchases = purchases.filter((item) => {
+      const purchaseDate = new Date(item.date_of_purchase);
+      const purchaseMonth = purchaseDate.getMonth();
+      const purchaseYear = purchaseDate.getFullYear();
+
+      return purchaseMonth === currentMonth && purchaseYear === currentYear;
+    });
+
+    return currentMonthPurchases.reduce((total, item) => {
+      return currentMonthPurchases.reduce((total, item) => {
+        return total + item.total_amount;
+      }, 0);
+    }, 0);
+  };
+
+  const totalStockQuantity = purchaseQuantity();
 
   return (
-    <div className="purchases-container">
-      <div className="filters-section">
-        <div className="filters-group">
-          <div className="filter">
+    <div className="dashboard">
+      <div className="header">
+        <h1>Purchases</h1>
+        <div className="filters">
+          <div className="filter-group">
+            <label>Date Range</label>
             <input
               type="date"
-              name="dateRange"
-              value={filters.dateRange}
-              onChange={handleFilterChange}
-              className="filter-input"
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="date-input"
             />
           </div>
-          
-          <div className="filter">
+
+          <div className="filter-group">
+            <label>Supplier</label>
             <select
-              name="supplier"
-              value={filters.supplier}
-              onChange={handleFilterChange}
-              className="filter-input"
+              value={selectedSupplier}
+              onChange={(e) => setSelectedSupplier(e.target.value)}
+              className="select-input"
             >
               <option>All Suppliers</option>
               <option>Acme Supplies</option>
               <option>Clean Co.</option>
+              <option>Food Distributors Inc.</option>
             </select>
           </div>
 
-          <div className="filter">
+          <div className="filter-group">
+            <label>Category</label>
             <select
-              name="category"
-              value={filters.category}
-              onChange={handleFilterChange}
-              className="filter-input"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="select-input"
             >
               <option>All Categories</option>
               <option>Food & Beverages</option>
@@ -81,61 +97,56 @@ export default function Purchases() {
             </select>
           </div>
 
-          <div className="filter">
+          <div className="filter-group search">
             <input
               type="text"
-              name="search"
-              value={filters.search}
-              onChange={handleFilterChange}
               placeholder="Search purchases..."
-              className="filter-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
             />
           </div>
-        </div>
 
-        <button className="add-button">
-          + Add New Purchase
-        </button>
+          <button className="add-button">+ Add New Purchase</button>
+        </div>
       </div>
 
-      <div className="purchases-table">
+      <div className="table-container">
         <table>
           <thead>
             <tr>
               <th>DATE</th>
               <th>PURCHASE ID</th>
               <th>SUPPLIER NAME</th>
-              <th>CATEGORY</th>
-              <th>DESCRIPTION</th>
-              <th>QUANTITY</th>
-              <th>UNIT PRICE</th>
               <th>TOTAL COST</th>
               <th>PAYMENT STATUS</th>
               <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            {purchasesData.map((purchase) => (
-              <tr key={purchase.id}>
-                <td>{purchase.date}</td>
-                <td>{purchase.id}</td>
-                <td>{purchase.supplier}</td>
-                <td>{purchase.category}</td>
-                <td>{purchase.description}</td>
-                <td>{purchase.quantity}</td>
-                <td>${purchase.unitPrice.toFixed(2)}</td>
-                <td>${purchase.totalCost.toFixed(2)}</td>
+            {purchases.map((purchase) => (
+              <tr key={purchase._id}>
                 <td>
-                  <span className={`status-badge ${purchase.status.toLowerCase()}`}>
+                  {new Date(purchase.date_of_purchase).toLocaleDateString()}
+                </td>
+                <td>{purchase.purchase_number}</td>
+                <td>{purchase.supplier.name}</td>
+                <td>KSH {purchase.total_amount}</td>
+
+                <td>
+                  <span className={`status ${purchase.status.toLowerCase()}`}>
                     {purchase.status}
                   </span>
                 </td>
-                <td>
-                  <div className="action-buttons">
-                    <button className="action-btn">👁️</button>
-                    <button className="action-btn">✏️</button>
-                    <button className="action-btn">🗑️</button>
-                  </div>
+                <td className="actions">
+                  <button
+                    className="action-btn view"
+                    onClick={() => handleViewPurchase(purchase)}
+                  >
+                    👁️
+                  </button>
+                  <button className="action-btn edit">✏️</button>
+                  <button className="action-btn delete">🗑️</button>
                 </td>
               </tr>
             ))}
@@ -146,7 +157,7 @@ export default function Purchases() {
       <div className="summary-section">
         <div className="summary-card">
           <h3>Total Monthly Purchases</h3>
-          <p className="amount">$15,750.00</p>
+          <p className="amount">KSH {totalStockQuantity}</p>
         </div>
 
         <div className="summary-card">
@@ -156,129 +167,174 @@ export default function Purchases() {
 
         <div className="summary-card">
           <h3>Category Breakdown</h3>
-          <div className="chart-placeholder">
-            Chart Placeholder
-          </div>
+          <div className="chart-placeholder">Chart Placeholder</div>
         </div>
 
         <div className="summary-card">
           <h3>Top Suppliers</h3>
-          <div className="supplier-list">
-            <div className="supplier-item">
-              <span>Acme Supplies</span>
-              <span>$5,000</span>
-            </div>
-            <div className="supplier-item">
-              <span>Clean Co.</span>
-              <span>$3,500</span>
-            </div>
-            <div className="supplier-item">
-              <span>Food Distributors Inc.</span>
-              <span>$2,750</span>
-            </div>
-          </div>
+          <ul className="top-suppliers">
+            {topSuppliers.map((supplier, index) => (
+              <li key={index}>
+                <span>{supplier.name}</span>
+                <span>${supplier.amount.toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className="footer-section">
-        <div className="export-buttons">
-          <button className="secondary-button">📥 Export</button>
-          <button className="secondary-button">🖨️ Print</button>
+      <div className="footer">
+        <div className="export-controls">
+          <button className="export-btn">📤 Export</button>
+          <button className="print-btn">🖨️ Print</button>
         </div>
         <div className="pagination">
-          <span>Showing 1-10 of 50 entries</span>
-          <div className="pagination-buttons">
-            <button disabled>←</button>
-            <button>→</button>
-          </div>
+          Showing 1-10 of 50 entries
+          <button className="page-btn">←</button>
+          <button className="page-btn">→</button>
         </div>
       </div>
 
+      {selectedPurchase && (
+        <PurchaseDetails
+          purchase={selectedPurchase}
+          onClose={() => setSelectedPurchase(null)}
+        />
+      )}
       <style jsx>{`
-        .purchases-container {
+        .dashboard {
           padding: 20px;
-          background-color: #f5f5f5;
+          background-color: #f8f9fa;
+          min-height: 100vh;
         }
 
-        .filters-section {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+        .header {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           margin-bottom: 20px;
-          gap: 20px;
         }
 
-        .filters-group {
+        .header h1 {
+          margin: 0 0 20px 0;
+          color: #1a1a1a;
+          font-size: 24px;
+        }
+
+        .filters {
           display: flex;
-          gap: 15px;
+          gap: 20px;
+          align-items: flex-end;
           flex-wrap: wrap;
         }
 
-        .filter-input {
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .filter-group label {
+          font-size: 14px;
+          color: #666;
+        }
+
+        .date-input,
+        .select-input,
+        .search-input {
           padding: 8px 12px;
           border: 1px solid #ddd;
           border-radius: 4px;
           font-size: 14px;
+          min-width: 200px;
+        }
+
+        .search {
+          flex-grow: 1;
+        }
+
+        .search-input {
+          width: 90%;
         }
 
         .add-button {
-          padding: 8px 16px;
-          background-color: #1a73e8;
+          background-color: #0066ff;
           color: white;
           border: none;
+          padding: 8px 16px;
           border-radius: 4px;
           cursor: pointer;
+          font-size: 14px;
+          height: 38px;
+          white-space: nowrap;
         }
 
-        .purchases-table {
-          background: white;
+        .add-button:hover {
+          background-color: #0052cc;
+        }
+
+        .table-container {
+          background-color: white;
           border-radius: 8px;
-          overflow: hidden;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          overflow-x: auto;
           margin-bottom: 20px;
         }
 
         table {
           width: 100%;
           border-collapse: collapse;
-        }
-
-        th, td {
-          padding: 12px;
-          text-align: left;
-          border-bottom: 1px solid #eee;
+          font-size: 14px;
         }
 
         th {
           background-color: #f8f9fa;
+          padding: 12px 16px;
+          text-align: left;
+          color: #666;
           font-weight: 500;
+          white-space: nowrap;
         }
 
-        .status-badge {
+        td {
+          padding: 12px 16px;
+          border-top: 1px solid #eee;
+          color: #333;
+        }
+
+        .status {
           padding: 4px 8px;
           border-radius: 12px;
           font-size: 12px;
+          font-weight: 500;
         }
 
-        .status-badge.paid {
+        .status.completed {
           background-color: #e6f4ea;
-          color: #1e8e3e;
+          color: #1e7e34;
         }
 
-        .status-badge.pending {
-          background-color: #fef7e0;
-          color: #f9ab00;
+        .status.pending {
+          background-color: #fff3e0;
+          color: #e65100;
         }
 
-        .action-buttons {
+        .actions {
           display: flex;
           gap: 8px;
         }
 
         .action-btn {
-          padding: 4px 8px;
           background: none;
           border: none;
           cursor: pointer;
+          padding: 4px;
+          font-size: 16px;
+        }
+
+        .action-btn:hover {
+          opacity: 0.7;
         }
 
         .summary-section {
@@ -289,85 +345,126 @@ export default function Purchases() {
         }
 
         .summary-card {
-          background: white;
+          background-color: white;
           padding: 20px;
           border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card h3 {
+          margin: 0 0 16px 0;
+          color: #666;
+          font-size: 16px;
+          font-weight: 500;
         }
 
         .amount {
           font-size: 24px;
-          font-weight: bold;
-          margin-top: 10px;
+          font-weight: 600;
+          color: #1a1a1a;
+          margin: 0;
         }
 
         .amount.red {
-          color: #d32f2f;
+          color: #dc3545;
         }
 
         .chart-placeholder {
+          background-color: #f8f9fa;
           height: 150px;
-          background: #f5f5f5;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-top: 10px;
+          color: #666;
           border-radius: 4px;
         }
 
-        .supplier-list {
-          margin-top: 10px;
+        .top-suppliers {
+          list-style: none;
+          padding: 0;
+          margin: 0;
         }
 
-        .supplier-item {
+        .top-suppliers li {
           display: flex;
           justify-content: space-between;
           padding: 8px 0;
           border-bottom: 1px solid #eee;
         }
 
-        .footer-section {
+        .top-suppliers li:last-child {
+          border-bottom: none;
+        }
+
+        .footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          padding: 20px;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .export-buttons {
+        .export-controls {
           display: flex;
-          gap: 10px;
+          gap: 12px;
         }
 
-        .secondary-button {
+        .export-btn,
+        .print-btn,
+        .page-btn {
           padding: 8px 16px;
-          background: white;
           border: 1px solid #ddd;
           border-radius: 4px;
+          background-color: white;
+          color: #666;
           cursor: pointer;
+          font-size: 14px;
+        }
+
+        .export-btn:hover,
+        .print-btn:hover,
+        .page-btn:hover {
+          background-color: #f8f9fa;
         }
 
         .pagination {
           display: flex;
           align-items: center;
-          gap: 20px;
+          gap: 12px;
+          color: #666;
+          font-size: 14px;
         }
 
-        .pagination-buttons {
-          display: flex;
-          gap: 5px;
-        }
+        @media (max-width: 768px) {
+          .filters {
+            flex-direction: column;
+            align-items: stretch;
+          }
 
-        .pagination-buttons button {
-          padding: 4px 8px;
-          border: 1px solid #ddd;
-          background: white;
-          border-radius: 4px;
-          cursor: pointer;
-        }
+          .filter-group {
+            width: 100%;
+          }
 
-        .pagination-buttons button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+          .date-input,
+          .select-input,
+          .search-input {
+            min-width: 0;
+          }
+
+          .summary-section {
+            grid-template-columns: 1fr;
+          }
+
+          .footer {
+            flex-direction: column;
+            gap: 20px;
+          }
         }
       `}</style>
     </div>
-  )
-}
+  );
+};
+
+export default Purchases;
