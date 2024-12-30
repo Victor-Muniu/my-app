@@ -27,6 +27,8 @@ import LocalPurchaseOrders from "../pages/LocalPurchaseOrders";
 import Restaurant from "../pages/Restaurant";
 import Bar from "../pages/Bar";
 import Podium from "../pages/Podium";
+import RequisitionPage from "../pages/RequisitionPage";
+import KOTManagerPage from "../pages/KOTManagerPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -275,6 +277,26 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Podium />
+      }
+    ]
+  },
+  {
+    path: "/requisition_form",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <RequisitionPage />
+      }
+    ]
+  },
+  {
+    path: "/kot",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <KOTManagerPage />
       }
     ]
   }

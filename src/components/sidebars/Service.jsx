@@ -3,11 +3,14 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 const Service = () => {
   const [uncleared, setUncleared] = useState([]);
+  const [uncleared2, setUncleared2] = useState([])
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchBills();
+    fetchBarBills();
     fetchCurrentUser();
+
   }, []);
 
   const fetchBills = async () => {
@@ -21,6 +24,16 @@ const Service = () => {
     }
   };
 
+  const fetchBarBills = async () =>{
+    try{
+      const response = await axios.get("http://localhost:3002/bar-bills", {
+        withCredentials: true,
+      });
+      setUncleared2(response.data);
+    }catch (error){
+      console.error("Error fetching bills:", error);
+    }
+  };
   const fetchCurrentUser = async () => {
     try {
       const response = await axios.get("http://localhost:3002/current-user", {
@@ -38,19 +51,28 @@ const Service = () => {
       console.log("Current user or emp_no is undefined");
       return []; 
     }
-
-    console.log("Current User Emp No:", currentUser.user.emp_no); 
-    console.log("Uncleared Bills:", uncleared); 
-
-    const notClearedBills = uncleared.filter(
+  
+    console.log("Current User Emp No:", currentUser.user.emp_no);
+    console.log("Uncleared Restaurant Bills:", uncleared);
+    console.log("Uncleared Bar Bills:", uncleared2);
+  
+    const restaurantBills = uncleared.filter(
       (bill) =>
         bill.status === "not cleared" &&
-        bill.served_by?.emp_no === currentUser.user.emp_no 
+        bill.served_by?.emp_no === currentUser.user.emp_no
     );
-
-    console.log("Filtered Not Cleared Bills:", notClearedBills);
-
-    return notClearedBills;
+  
+    const barBills = uncleared2.filter(
+      (bill) =>
+        bill.status === "not cleared" &&
+        bill.served_by?.emp_no === currentUser.user.emp_no
+    );
+  
+    const allNotClearedBills = [...restaurantBills, ...barBills];
+  
+    console.log("Filtered Not Cleared Bills:", allNotClearedBills);
+  
+    return allNotClearedBills;
   };
 
   const canSee = () => {
@@ -80,7 +102,7 @@ const Service = () => {
           <span className="nav-icon">🍷</span>
           <span className="nav-text">Bar POS</span>
         </Link>
-        <Link to="/requisition-form" className="nav-item">
+        <Link to="/requisition_form" className="nav-item">
           <span className="nav-icon">📝</span>
           <span className="nav-text">Requisition Form</span>
         </Link>
@@ -96,7 +118,8 @@ const Service = () => {
           <span className="nav-icon">📋</span>
           <span className="nav-text">Pending Bills</span>
           <span className="badge">
-            {getNotClearedBills().length > 0 ? getNotClearedBills().length : ""}
+          {getNotClearedBills().length > 0 ? getNotClearedBills().length : ""}
+
           </span>
         </Link>
         <Link to="/kot-management" className="nav-item">

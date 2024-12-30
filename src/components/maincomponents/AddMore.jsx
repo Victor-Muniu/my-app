@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-function BarMenu({ table, onClose }) {
+function AddMore({ table, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentOrder, setCurrentOrder] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [orderToPost, setOrderToPost] = useState({
-    table_number: table.table_number,
     menu_items: [],
   });
-
   useEffect(() => {
     fetchMenu();
   }, []);
@@ -109,16 +107,19 @@ function BarMenu({ table, onClose }) {
   const clearOrder = () => {
     setCurrentOrder([]);
     setOrderToPost({
-      table_number: table.table_number,
       menu_items: [],
     });
   };
 
   const sendToKitchen = async () => {
     try {
-      await axios.post("http://localhost:3002/assign_bar", orderToPost, {
-        withCredentials: true,
-      });
+      await axios.post(
+        `http://localhost:3002/barbill/table/${table.table_number}/add-items`,
+        orderToPost,
+        {
+          withCredentials: true,
+        }
+      );
       console.log("Order sent to kitchen:", orderToPost);
       clearOrder();
       onClose();
@@ -141,7 +142,6 @@ function BarMenu({ table, onClose }) {
   const filteredItems = menuItems.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   return (
     <div className="menu-overlay">
       <div className="menu-container">
@@ -256,6 +256,7 @@ function BarMenu({ table, onClose }) {
           </div>
         </div>
       </div>
+
       <style jsx>{`
         .menu-overlay {
           position: fixed;
@@ -519,4 +520,4 @@ function BarMenu({ table, onClose }) {
   );
 }
 
-export default BarMenu;
+export default AddMore;

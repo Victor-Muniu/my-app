@@ -3,43 +3,43 @@ import axios from "axios";
 import Menu from "../components/maincomponents/Menu";
 import BillModal from "../components/maincomponents/BillModal";
 import AddItems from "../components/maincomponents/AddItems";
+import KOTmodal from "../components/maincomponents/KOTmodal";
+
 function Restaurant() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [showBill, setShowBill] = useState(null);
+  const [showKot, setShowKot] = useState(null);
 
-  const activeStaff = [
-    {
-      id: 1,
-      name: "John Smith",
-      tables: 3,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      tables: 4,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 3,
-      name: "Mike Davis",
-      tables: 2,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-  ];
+  const [activeStaff, setActiveStaff] = useState([]);
 
   const [tables, setTables] = useState([]);
   useEffect(() => {
     fetchTable();
     fetchCurrentUser();
   }, []);
+
   const fetchTable = async () => {
     try {
       const response = await axios.get("http://localhost:3002/tables", {
         withCredentials: true,
       });
       setTables(response.data);
+      const staffData = response.data
+        .filter((table) => table.status === "occupied" && table.served_by)
+        .reduce((acc, table) => {
+          const staff = table.served_by;
+          if (!acc[staff.emp_no]) {
+            acc[staff.emp_no] = {
+              name: `${staff.fname} ${staff.lname}`,
+              tables: [],
+            };
+          }
+          acc[staff.emp_no].tables.push(table.table_number);
+          return acc;
+        }, {});
+
+      setActiveStaff(Object.values(staffData));
     } catch (error) {
       console.error("Error fetching staff data:", error);
     }
@@ -55,13 +55,13 @@ function Restaurant() {
     }
   };
   const [selectedTable, setSelectedTable] = useState(null);
-  const [selected2, setSelected2] = useState(null)
+  const [selected2, setSelected2] = useState(null);
 
   const handleAssign = (table) => {
     setSelectedTable(table);
   };
 
-  const handleAdd = (table) =>{
+  const handleAdd = (table) => {
     setSelected2(table);
   };
   const canManageTable = (table) => {
@@ -71,7 +71,6 @@ function Restaurant() {
       currentUser.user.emp_no === table.served_by.emp_no
     );
   };
-  
 
   const handlePrintBill = async (table_number) => {
     try {
@@ -84,6 +83,44 @@ function Restaurant() {
       setShowBill(response.data);
     } catch (error) {
       console.error("Error fetching bill:", error);
+    }
+  };
+
+  const handlePrintKOT = async (table) => {
+    if (!table.billId) {
+      try {
+        const response = await axios.get(
+          `http://localhost:3002/bills/table/${table.table_number}`,
+          {
+            withCredentials: true,
+          }
+        );
+        const billId = response.data._id;
+
+        const updatedTables = tables.map((t) =>
+          t._id === table._id ? { ...t, billId } : t
+        );
+        setTables(updatedTables);
+
+        fetchKOT(billId);
+      } catch (error) {
+        console.error("Error fetching bill for KOT:", error);
+      }
+    } else {
+      fetchKOT(table.billId);
+    }
+  };
+
+  const fetchKOT = async (billId) => {
+    try {
+      const response = await axios.get(`http://localhost:3002/kot/${billId}`, {
+        withCredentials: true,
+      });
+
+      const kotData = response.data;
+      setShowKot(kotData);
+    } catch (error) {
+      console.error("Error fetching KOT:", error);
     }
   };
 
@@ -130,15 +167,13 @@ function Restaurant() {
         <h2>Active Staff</h2>
         <div className="staff-list">
           {activeStaff.map((staff) => (
-            <div key={staff.id} className="staff-card">
-              <img
-                src={staff.avatar}
-                alt={staff.name}
-                className="staff-avatar"
-              />
+            <div key={staff.emp_no} className="staff-card">
+              <img src={staff.avatar} className="staff-avatar" />
               <div className="staff-info">
                 <span className="staff-name">{staff.name}</span>
-                <span className="staff-tables">Tables: {staff.tables}</span>
+                <span className="staff-tables">
+                  Tables: {staff.tables.join(", ")}
+                </span>
               </div>
             </div>
           ))}
@@ -174,8 +209,18 @@ function Restaurant() {
                     >
                       Print Bill
                     </button>
-                    <button className="print-bill-button">Print Kot</button>
-                    <button className="add-items-button" onClick={() => handleAdd(table)}>Add More Items</button>
+                    <button
+                      className="print-bill-button"
+                      onClick={() => handlePrintKOT(table)}
+                    >
+                      Print Kot
+                    </button>
+                    <button
+                      className="add-items-button"
+                      onClick={() => handleAdd(table)}
+                    >
+                      Add More Items
+                    </button>
                   </div>
                 )}
               </>
@@ -215,14 +260,14 @@ function Restaurant() {
         <Menu table={selectedTable} onClose={() => setSelectedTable(null)} />
       )}
       {selected2 && (
-        <AddItems table={selected2} onClose={() =>setSelected2(null)}/>
+        <AddItems table={selected2} onClose={() => setSelected2(null)} />
       )}
 
       {showBill && (
-        <BillModal
-          billDetails={showBill}
-          onClose={() => setShowBill(null)}
-        />
+        <BillModal billDetails={showBill} onClose={() => setShowBill(null)} />
+      )}
+      {showKot && (
+        <KOTmodal kotDetails={showKot} onClose={() => setShowKot(null)} />
       )}
       <style jsx>{`
         root {

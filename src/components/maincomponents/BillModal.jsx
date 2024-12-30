@@ -96,17 +96,22 @@ const BillModal = ({ billDetails, onClose }) => {
               <div className="receipt-row">
                 <span>
                   Receipt #: INV{new Date().getFullYear()}-
-                  {String(billDetails.table.table_number).padStart(3, "0")}
+                  {String(billDetails?.table?.table_number || "000").padStart(
+                    3,
+                    "0"
+                  )}
                 </span>
-                <span>Table: {billDetails.table.table_number}</span>
+                <span>
+                  Table: {billDetails?.table?.table_number || "Unknown"}
+                </span>
               </div>
               <div className="receipt-row">
                 <span>
                   Date: {new Date(billDetails.createdAt).toDateString()}
                 </span>
                 <span>
-                  Served by: {billDetails.served_by.fname}{" "}
-                  {billDetails.served_by.lname}
+                  Served by: {billDetails?.served_by?.fname || "Unknown"}{" "}
+                  {billDetails?.served_by?.lname || ""}
                 </span>
               </div>
               <div className="items-section">
