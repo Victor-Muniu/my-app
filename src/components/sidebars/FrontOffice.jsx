@@ -26,7 +26,7 @@ const menuItems = [
   {
     icon: <Building2 className="menu-icon" />,
     label: "Curio Management",
-    href: "/management",
+    href: "/curio",
   },
   {
     icon: <LibraryBig className="menu-icon" />,

@@ -31,6 +31,7 @@ import RequisitionPage from "../pages/RequisitionPage";
 import KOTManagerPage from "../pages/KOTManagerPage";
 import Pending_Bills from "../pages/Pending_Bills";
 import Rooms from "../pages/Rooms";
+import CurioManagement from "../pages/CurioManagement";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -319,6 +320,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Rooms />
+      }
+    ]
+  },
+  {
+    path: "/curio",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <CurioManagement />
       }
     ]
   }
