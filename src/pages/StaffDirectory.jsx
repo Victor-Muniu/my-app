@@ -208,6 +208,8 @@ export default function StaffDirectory() {
                 <option value="Food and Beverage Service">Food and Beverage Service</option>
                 <option value="Store">Store</option>
                 <option value="Front Office">Front Office</option>
+                <option value="House Keeping">House Keeping</option>
+                <option value="Security">Security</option>
               </select>
             </div>
             <div className="form-group">
