@@ -30,7 +30,7 @@ export default function StaffDirectory() {
     setFilters(prev => ({
       ...prev,
       [name]: value
-    }));
+  }));
   };
   const [isAddCardVisible, setIsAddCardVisible] = useState(false)
   const [newStaff, setNewStaff] = useState({
@@ -61,9 +61,25 @@ export default function StaffDirectory() {
     }));
   };
   
-  
 
+  const filterStaffData = () => {
+    return staffData.filter((staff) => {
+      const searchLower = filters.search.toLowerCase();
+      const fullName = `${staff.fname} ${staff.lname}`.toLowerCase();
+      const matchesSearch = fullName.includes(searchLower) || 
+                            staff.email.toLowerCase().includes(searchLower) ||
+                            staff.emp_no.toLowerCase().includes(searchLower);
+      
+      const matchesDepartment = filters.department === 'All Departments' || staff.department === filters.department;
+      const matchesStatus = filters.status === 'All Statuses' || staff.status === filters.status;
+      const matchesRole = filters.role === 'All Roles' || staff.role === filters.role;
+      
+      // Add date filtering if needed
+      // const matchesDate = filters.date === '' || ... (implement date logic here)
 
+      return matchesSearch && matchesDepartment && matchesStatus && matchesRole;
+    });
+  };
   
 
   return (
@@ -91,9 +107,15 @@ export default function StaffDirectory() {
               className="filter-select"
             >
               <option>All Departments</option>
-              <option>HR</option>
+              <option>Store</option>
               <option>ICT</option>
               <option>Accounts</option>
+              <option >Food and Beverage Service</option>
+              <option >Food and Beverage Production</option>
+              <option >Front Office</option>
+              <option>Human Resource</option>
+              <option>Security</option>
+              <option>House Keeping</option>
             </select>
 
             <select
@@ -109,12 +131,12 @@ export default function StaffDirectory() {
             </select>
 
             <select
-              name="jobTitle"
-              value={filters.jobTitle}
+              name="role"
+              value={filters.role}
               onChange={handleFilterChange}
               className="filter-select"
             >
-              <option>All Job Titles</option>
+              <option>All Roles</option>
               <option>Manager</option>
               <option>Developer</option>
               <option>Analyst</option>
@@ -257,7 +279,7 @@ export default function StaffDirectory() {
             </tr>
           </thead>
           <tbody>
-            {staffData.map((staff) => (
+            {filterStaffData().map((staff) => (
               <tr key={staff._id}>
                 <td>{staff.emp_no}</td>
                 <td>{staff.fname} {staff.lname}</td>
@@ -544,3 +566,4 @@ export default function StaffDirectory() {
     </div>
   )
 }
+

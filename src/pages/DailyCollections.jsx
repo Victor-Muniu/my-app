@@ -222,15 +222,15 @@ export default function DailyCollections() {
           </div>
           <div className="summary-card expected">
             <h3>Expected Collection</h3>
-            <p className="amount">$25,000.00</p>
+            <p className="amount">Ksh 25,000.00</p>
           </div>
           <div className="summary-card variance">
             <h3>Variance</h3>
-            <p className="amount negative">-$432.11</p>
+            <p className="amount negative">-Ksh 432.11</p>
           </div>
           <div className="summary-card outstanding">
             <h3>Outstanding Amount</h3>
-            <p className="amount">$1,234.56</p>
+            <p className="amount">Ksh 1,234.56</p>
           </div>
         </div>
       </section>

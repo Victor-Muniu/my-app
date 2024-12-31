@@ -10,6 +10,7 @@ import {
   BarChart3,
   UserCog,
   Settings,
+  LibraryBig,
 } from "lucide-react";
 const menuItems = [
   {
@@ -28,6 +29,11 @@ const menuItems = [
     href: "/management",
   },
   {
+    icon: <LibraryBig className="menu-icon" />,
+    label: "Daily Collections",
+    href: "/daily_collections",
+  },
+  {
     icon: <CalendarDays className="menu-icon" />,
     label: "Reservations",
     notifications: 2,
@@ -40,8 +46,8 @@ const menuItems = [
   },
   {
     icon: <CreditCard className="menu-icon" />,
-    label: "Billing & Payments",
-    href: "/billing",
+    label: "Restaurant Bills",
+    href: "/pending",
   },
   {
     icon: <Users className="menu-icon" />,
@@ -51,13 +57,13 @@ const menuItems = [
   },
   {
     icon: <BarChart3 className="menu-icon" />,
-    label: "Reports & Analytics",
-    href: "/reports",
+    label: "Occupancy Report",
+    href: "/room_status",
   },
   {
     icon: <Building2 className="menu-icon" />,
     label: "Rooms",
-    href: "/management",
+    href: "/rooms",
   },
   {
     icon: <UserCog className="menu-icon" />,

@@ -30,6 +30,7 @@ import Podium from "../pages/Podium";
 import RequisitionPage from "../pages/RequisitionPage";
 import KOTManagerPage from "../pages/KOTManagerPage";
 import Pending_Bills from "../pages/Pending_Bills";
+import Rooms from "../pages/Rooms";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -308,6 +309,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Pending_Bills />
+      }
+    ]
+  },
+  {
+    path: "/rooms",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <Rooms />
       }
     ]
   }

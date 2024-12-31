@@ -3,7 +3,7 @@ import { Search, Filter } from 'lucide-react';
 import BillCard from './BillCard';
 import Logo from "../../images/Logo.jpg"
 
-const AUTHORIZED_ROLES = ['admin', 'receptionist', 'general_manager'];
+const AUTHORIZED_ROLES = ['admin', 'Receptionist', 'General Manager'];
 
 const BillManager = ({ uncleared, uncleared2, currentUser }) => {
   const [searchQuery, setSearchQuery] = useState('');

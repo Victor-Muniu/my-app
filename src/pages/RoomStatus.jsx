@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ChevronDown,
-  AlertTriangle,
-  FileText,
-  FileSpreadsheet,
-  PieChart,
-} from "lucide-react";
+import { ChevronDown, AlertTriangle, FileText, FileSpreadsheet, PieChart } from 'lucide-react';
 import axios from "axios";
 export default function RoomOccupancyDashboard() {
   const [selectedDate, setSelectedDate] = useState("Today");
@@ -13,70 +7,41 @@ export default function RoomOccupancyDashboard() {
   const [selectedFloor, setSelectedFloor] = useState("All Floors");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [roomData, setRoomData] = useState([]);
+  const [loading, setLoading] = useState(true); // Added loading state
+
   useEffect(() => {
     fetchRoomData();
   }, []);
   
   
   const fetchRoomData = async () => {
+    setLoading(true); // Set loading to true before fetching data
     try {
       const response = await axios.get("http://localhost:3002/rooms");
       setRoomData(response.data);
     } catch (error) {
       console.error("Error fetching staff data:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching data, regardless of success or failure
     }
 }
-  const roomStatuses = [
-    {
-      roomNumber: "101",
-      roomType: "Single",
-      floor: 1,
-      status: "Occupied",
-      daysOccupied: 25,
-      lastMaintenance: "2023-03-15",
-      usage: 80,
-    },
-    {
-      roomNumber: "202",
-      roomType: "Double",
-      floor: 2,
-      status: "Vacant",
-      daysOccupied: 15,
-      lastMaintenance: "2023-04-01",
-      usage: 60,
-    },
-    {
-      roomNumber: "303",
-      roomType: "Suite",
-      floor: 3,
-      status: "Damaged",
-      daysOccupied: 5,
-      lastMaintenance: "2023-02-28",
-      usage: 20,
-    },
-  ];
-
-  const damagedRooms = [
-    {
-      roomNumber: "303",
-      roomType: "Suite",
-      issue: "Broken AC",
-      reportedDate: "2023-05-01",
-      expectedRepair: "2023-05-05",
-      priority: "High",
-    },
-    {
-      roomNumber: "205",
-      roomType: "Double",
-      issue: "Plumbing Issues",
-      reportedDate: "2023-04-28",
-      expectedRepair: "2023-05-07",
-      priority: "Medium",
-    },
-  ];
-
+  
+  const damagedRooms = roomData
+  .filter(room => room.status === 'Damaged')
+  .map(room => ({
+    roomNumber: room.roomNumber,
+    roomType: room.type,
+    priority: room.priority || 'Low', // Assuming priority is not in the original data, defaulting to 'Low'
+    issue: `Room ${room.roomNumber} is damaged and needs repair.`,
+    reportedDate: new Date().toLocaleDateString(), // Using current date as we don't have this in the original data
+    expectedRepair: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString() // Setting expected repair date to 7 days from now
+  }));
+  
   return (
     <div className="room-occupancy-dashboard">
+      {loading && ( // Conditionally render loading indicator
+        <div className="loading">Loading...</div>
+      )}
       <h1>Room Occupancy Dashboard</h1>
 
       <div className="filters">
@@ -134,27 +99,34 @@ export default function RoomOccupancyDashboard() {
         <div className="overview-grid">
           <div className="overview-card blue">
             <h3>Total Rooms</h3>
-            <p>100</p>
+            <p>{roomData.length}</p>
           </div>
           <div className="overview-card green">
             <h3>Occupied Rooms</h3>
-            <p>75</p>
+            <p>{roomData.filter(room => room.status === 'Occupied').length}</p>
           </div>
           <div className="overview-card yellow">
             <h3>Vacant Rooms</h3>
-            <p>20</p>
+            <p>{roomData.filter(room => room.status === 'Vacant').length}</p>
           </div>
           <div className="overview-card red">
             <h3>Damaged Rooms</h3>
-            <p>5</p>
+            <p>{roomData.filter(room => room.status === 'Damaged').length}</p>
           </div>
         </div>
         <div className="occupancy-rate">
           <h3>Occupancy Rate</h3>
           <div className="progress-bar">
-            <div className="progress" style={{ width: "75%" }}></div>
+            <div 
+              className="progress" 
+              style={{ 
+                width: `${(roomData.filter(room => room.status === 'Occupied').length / roomData.length) * 100}%` 
+              }}
+            ></div>
           </div>
-          <p className="rate-value">75%</p>
+          <p className="rate-value">
+            {((roomData.filter(room => room.status === 'Occupied').length / roomData.length) * 100).toFixed(2)}%
+          </p>
         </div>
       </div>
 
@@ -243,23 +215,27 @@ export default function RoomOccupancyDashboard() {
         </div>
         <div className="damaged-room-tracking">
           <h2>Damaged Room Tracking</h2>
-          {damagedRooms.map((room) => (
-            <div key={room.roomNumber} className="damaged-room">
-              <div className="room-header">
-                <h3>
-                  Room {room.roomNumber} ({room.roomType})
-                </h3>
-                <span
-                  className={`priority-badge ${room.priority.toLowerCase()}`}
-                >
-                  {room.priority} Priority
-                </span>
+          {damagedRooms.length > 0 ? (
+            damagedRooms.map((room) => (
+              <div key={room.roomNumber} className="damaged-room">
+                <div className="room-header">
+                  <h3>
+                    Room {room.roomNumber} ({room.roomType})
+                  </h3>
+                  <span
+                    className={`priority-badge ${room.priority.toLowerCase()}`}
+                  >
+                    {room.priority} Priority
+                  </span>
+                </div>
+                <p className="issue">{room.issue}</p>
+                <p className="date">Reported: {room.reportedDate}</p>
+                <p className="date">Expected Repair: {room.expectedRepair}</p>
               </div>
-              <p className="issue">{room.issue}</p>
-              <p className="date">Reported: {room.reportedDate}</p>
-              <p className="date">Expected Repair: {room.expectedRepair}</p>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No damaged rooms to report.</p>
+          )}
         </div>
       </div>
 
@@ -456,11 +432,12 @@ export default function RoomOccupancyDashboard() {
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 500;
+          color: white; /* Updated CSS */
         }
 
-        .status-badge.occupied { background-color: #e6f4ea; color: #1e8e3e; }
-        .status-badge.vacant { background-color: #fef7e0; color: #f9ab00; }
-        .status-badge.damaged { background-color: #fce8e6; color: #d93025; }
+        .status-badge.occupied { background-color: #1e8e3e; } /* Updated CSS */
+        .status-badge.vacant { background-color: #f9ab00; } /* Updated CSS */
+        .status-badge.damaged { background-color: #d93025; } /* Updated CSS */
 
         .usage-bar {
           width: 96px;
@@ -540,9 +517,9 @@ export default function RoomOccupancyDashboard() {
           font-weight: 500;
         }
 
-        .priority-badge.high { background-color: #fce8e6; color: #d93025; }
-        .priority-badge.medium { background-color: #fef7e0; color: #f9ab00; }
-        .priority-badge.low { background-color: #e6f4ea; color: #1e8e3e; }
+        .priority-badge.high { background-color: #d93025; color: white; } /* Updated CSS */
+        .priority-badge.medium { background-color: #f9ab00; color: white; } /* Updated CSS */
+        .priority-badge.low { background-color: #1e8e3e; color: white; } /* Updated CSS */
 
         .issue {
           font-size: 14px;
@@ -604,6 +581,15 @@ export default function RoomOccupancyDashboard() {
         .export-button.green { background-color: #1e8e3e; color: white; }
         .export-button.purple { background-color: #9334e6; color: white; }
 
+        .loading {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          font-size: 24px;
+          color: #4b5563;
+        }
+
         @media (max-width: 768px) {
           .filters {
             flex-direction: column;
@@ -629,3 +615,4 @@ export default function RoomOccupancyDashboard() {
     </div>
   );
 }
+
