@@ -1,37 +1,66 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
 
 function Podium() {
-  const topPerformers = [
-    {
-      rank: 2,
-      name: "Jane Smith",
-      amount: 85000,
-      image: "/placeholder.svg?height=60&width=60",
-    },
-    {
-      rank: 1,
-      name: "John Doe",
-      amount: 100000,
-      image: "/placeholder.svg?height=60&width=60",
-    },
-    {
-      rank: 3,
-      name: "Alice Johnson",
-      amount: 70000,
-      image: "/placeholder.svg?height=60&width=60",
-    },
-  ];
+  const [salesPerformers, setSalesPerformers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const salesTable = [
-    {
-      rank: 4,
-      name: "Bob Wilson",
-      image: "/placeholder.svg?height=40&width=40",
-      amount: 65000,
-      percentage: 18,
-      trend: "up",
-    },
-  ];
+  useEffect(() => {
+    fetchBills();
+  }, []);
+
+  const fetchBills = async () => {
+    try {
+      setLoading(true);
+      const [restaurantBills, barBills] = await Promise.all([
+        axios.get("http://localhost:3002/bills", { withCredentials: true }),
+        axios.get("http://localhost:3002/bar-bills", { withCredentials: true })
+      ]);
+
+      const allBills = [...restaurantBills.data, ...barBills.data];
+      const performersMap = new Map();
+
+      allBills.forEach(bill => {
+        const { _id, fname, lname, emp_no } = bill.served_by;
+        if (performersMap.has(_id)) {
+          performersMap.get(_id).totalSales += bill.total_amount;
+        } else {
+          performersMap.set(_id, {
+            _id,
+            name: `${fname} ${lname}`,
+            totalSales: bill.total_amount,
+            image: `/placeholder.svg?height=60&width=60`
+          });
+        }
+      });
+
+      const sortedPerformers = Array.from(performersMap.values())
+        .sort((a, b) => b.totalSales - a.totalSales)
+        .slice(0, 10);
+
+      setSalesPerformers(sortedPerformers);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+      setError("Failed to fetch sales data. Please try again later.");
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  const topPerformers = salesPerformers.slice(0, 3);
+  const salesTable = salesPerformers.slice(3);
+
+  const totalSales = salesPerformers.reduce((sum, performer) => sum + performer.totalSales, 0);
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -39,7 +68,7 @@ function Podium() {
         <div className="filters">
           <div className="date-picker">
             <span className="calendar-icon">📅</span>
-            July 15, 2025
+            {new Date().toLocaleDateString()}
           </div>
           <select className="period-select">
             <option>This Month</option>
@@ -53,8 +82,8 @@ function Podium() {
       <div className="podium-container">
         {topPerformers.map((performer, index) => (
           <div
-            key={performer.rank}
-            className={`podium-position position-${performer.rank}`}
+            key={performer._id}
+            className={`podium-position position-${index + 1}`}
           >
             <div className="performer-card">
               <img
@@ -63,9 +92,9 @@ function Podium() {
                 className="performer-avatar"
               />
               <h3>{performer.name}</h3>
-              <div className="amount">${performer.amount.toLocaleString()}</div>
+              <div className="amount">${performer.totalSales.toLocaleString()}</div>
               <div className="rank">
-                {index === 1 ? "1st" : index === 0 ? "2nd" : "3rd"}
+                {index === 0 ? "1st" : index === 1 ? "2nd" : "3rd"}
               </div>
             </div>
           </div>
@@ -78,19 +107,17 @@ function Podium() {
           <div className="staff-col">STAFF</div>
           <div className="amount-col">SALES AMOUNT</div>
           <div className="percentage-col">% OF TOTAL</div>
-          <div className="trend-col">TREND</div>
         </div>
-        {salesTable.map((item) => (
-          <div key={item.rank} className="table-row">
-            <div className="rank-col">{item.rank}</div>
+        {salesTable.map((performer, index) => (
+          <div key={performer._id} className="table-row">
+            <div className="rank-col">{index + 4}</div>
             <div className="staff-col">
-              <img src={item.image} alt={item.name} className="staff-avatar" />
-              <span>{item.name}</span>
+              <img src={performer.image} alt={performer.name} className="staff-avatar" />
+              <span>{performer.name}</span>
             </div>
-            <div className="amount-col">${item.amount.toLocaleString()}</div>
-            <div className="percentage-col">{item.percentage}%</div>
-            <div className="trend-col">
-              <span className={`trend-indicator ${item.trend}`}>↑</span>
+            <div className="amount-col">${performer.totalSales.toLocaleString()}</div>
+            <div className="percentage-col">
+              {((performer.totalSales / totalSales) * 100).toFixed(2)}%
             </div>
           </div>
         ))}
@@ -108,17 +135,16 @@ function Podium() {
         <div className="insights-grid">
           <div className="insight-card top-seller">
             <h3>Top Seller of the Month</h3>
-            <p>John Doe - $100,000 in sales</p>
+            <p>{topPerformers[0]?.name} - ${topPerformers[0]?.totalSales.toLocaleString()} in sales</p>
           </div>
           <div className="insight-card most-improved">
             <h3>Most Improved</h3>
-            <p>Alice Johnson - 25% increase</p>
+            <p>Data not available</p>
           </div>
         </div>
       </section>
-
       <footer className="dashboard-footer">
-        © 2025 Sales Performance Dashboard. All rights reserved.
+        © {new Date().getFullYear()} Sales Performance Dashboard. All rights reserved.
       </footer>
       <style jsx>{`
         .dashboard {

@@ -185,6 +185,7 @@ export default function StaffDirectory() {
                 <option value="Food and Beverage Production">Food and Beverage Production</option>
                 <option value="Food and Beverage Service">Food and Beverage Service</option>
                 <option value="Store">Store</option>
+                <option value="Front Office">Front Office</option>
               </select>
             </div>
             <div className="form-group">

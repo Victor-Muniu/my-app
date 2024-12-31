@@ -4,6 +4,7 @@ import Accounting from "./sidebars/Accounting";
 import GeneralManager from "./sidebars/GeneralManager";
 import Procurement from "./sidebars/Procurement";
 import Service from "./sidebars/Service";
+import FrontOffice from "./sidebars/FrontOffice";
 function Sidebar() {
   const role = Cookies.get('data')
   return (
@@ -22,6 +23,9 @@ function Sidebar() {
       )}
       {role === 'Waitress' &&(
         <Service />
+      )}
+      {role === 'Receptionist' &&(
+        <FrontOffice />
       )}
     </>
   );

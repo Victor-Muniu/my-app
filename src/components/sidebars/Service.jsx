@@ -39,7 +39,7 @@ const Service = () => {
       const response = await axios.get("http://localhost:3002/current-user", {
         withCredentials: true,
       });
-      console.log("Fetched current user:", response.data);
+      
       setCurrentUser(response.data);
     } catch (error) {
       console.error("Error fetching current user:", error);
@@ -52,9 +52,7 @@ const Service = () => {
       return []; 
     }
   
-    console.log("Current User Emp No:", currentUser.user.emp_no);
-    console.log("Uncleared Restaurant Bills:", uncleared);
-    console.log("Uncleared Bar Bills:", uncleared2);
+    
   
     const restaurantBills = uncleared.filter(
       (bill) =>
@@ -70,7 +68,7 @@ const Service = () => {
   
     const allNotClearedBills = [...restaurantBills, ...barBills];
   
-    console.log("Filtered Not Cleared Bills:", allNotClearedBills);
+   
   
     return allNotClearedBills;
   };
@@ -114,7 +112,7 @@ const Service = () => {
           <span className="nav-icon">🎪</span>
           <span className="nav-text">Banqueting</span>
         </Link>
-        <Link to="/pending-bills" className="nav-item">
+        <Link to="/pending" className="nav-item">
           <span className="nav-icon">📋</span>
           <span className="nav-text">Pending Bills</span>
           <span className="badge">
@@ -122,7 +120,7 @@ const Service = () => {
 
           </span>
         </Link>
-        <Link to="/kot-management" className="nav-item">
+        <Link to="/kot" className="nav-item">
           <span className="nav-icon">⭐</span>
           <span className="nav-text">KOT Management</span>
           <span className="star">⭐</span>

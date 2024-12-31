@@ -29,6 +29,7 @@ import Bar from "../pages/Bar";
 import Podium from "../pages/Podium";
 import RequisitionPage from "../pages/RequisitionPage";
 import KOTManagerPage from "../pages/KOTManagerPage";
+import Pending_Bills from "../pages/Pending_Bills";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -297,6 +298,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <KOTManagerPage />
+      }
+    ]
+  },
+  {
+    path: "/pending",
+    element: <ProtectedRoute element={<MainLayout />} />, 
+    children: [
+      {
+        index: true,
+        element: <Pending_Bills />
       }
     ]
   }
